@@ -1,0 +1,22 @@
+fastapi
+uvicorn[standard]
+
+# Database
+sqlalchemy
+psycopg2-binary      # if using PostgreSQL
+# or sqlite needs nothing extra
+
+# Auth & Security
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart     # for form data
+
+# Environment variables
+python-dotenv
+
+# Validation
+pydantic
+email-validator
+
+# Testing (optional)
+requests             # for test_setup.py script
