@@ -230,47 +230,61 @@ def get_course_quizzes(db: Session, course_id: int) -> List[Quiz]:
 
 def submit_quiz(db: Session, user_id: int, quiz_id: int, answers: List[Any]) -> QuizResult:
     """Submit quiz and calculate score handling list of objects from frontend/postman"""
-    # Use the pre-loading get_quiz to ensure questions are available
+    # 1. Load the quiz with questions
     quiz = get_quiz(db, quiz_id)
     if not quiz:
         raise ValueError("Quiz not found")
     
+    # 2. Initialize variables at the top to avoid NameError
     total_points = 0
     earned_points = 0
+    score = 0.0
+    passed = False
     
-    # Create a lookup map. We force the key to be a string to handle 
-    # JSON string keys ("1") vs Python integer IDs (1)
+    # 3. Create lookup map for user answers
     user_answer_map = {}
+    serializable_answers = [] # To ensure we save clean data to the DB
+    
     for item in answers:
+        # Extract data safely whether it's a dict or a Pydantic object
         qid = item.get("question_id") if isinstance(item, dict) else getattr(item, "question_id", None)
         ans = item.get("answer") if isinstance(item, dict) else getattr(item, "answer", None)
+        
         if qid is not None:
             user_answer_map[str(qid)] = ans
+            # Store a clean version for the database
+            serializable_answers.append({"question_id": qid, "answer": ans})
 
-    for question in quiz.questions:
-        total_points += question.points
-        # Match using string version of the question ID
-        user_raw_answer = user_answer_map.get(str(question.id))
-        
-        if user_raw_answer is not None:
-            u_ans = str(user_raw_answer).strip().lower()
-            c_ans = str(question.correct_answer).strip().lower()
-            if u_ans == c_ans:
-                earned_points += question.points
+    # 4. Calculate score
+    if quiz.questions:
+        for question in quiz.questions:
+            total_points += question.points
+            user_raw_answer = user_answer_map.get(str(question.id))
+            
+            if user_raw_answer is not None:
+                # Clean strings for comparison
+                u_ans = str(user_raw_answer).strip().lower()
+                c_ans = str(question.correct_answer).strip().lower()
+                if u_ans == c_ans:
+                    earned_points += question.points
 
-    score = (earned_points / total_points * 100) if total_points > 0 else 0
-    passed = score >= quiz.passing_score
+        # Calculate final percentage
+        if total_points > 0:
+            score = (earned_points / total_points) * 100
+            passed = score >= quiz.passing_score
 
+    # 5. Save the result
     result = QuizResult(
         user_id=user_id,
         quiz_id=quiz_id,
         course_id=quiz.course_id,
-        score=score,
+        score=score,           # Now guaranteed to be defined
         total_points=total_points,
         earned_points=earned_points,
-        passed=passed,
-        answers=answers 
+        passed=passed,         # Now guaranteed to be defined
+        answers=serializable_answers 
     )
+    
     db.add(result)
     db.commit()
     db.refresh(result)

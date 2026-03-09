@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '../services/api.service';
 import { BookOpen, AlertCircle, CheckCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ export default function Register() {
         password: formData.password,
         full_name: formData.full_name,
       });
-      
+
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
@@ -49,52 +50,75 @@ export default function Register() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
-        <div className="max-w-md w-full bg-gray-800 rounded-2xl shadow-xl p-8 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="bg-green-900 p-3 rounded-full">
-              <CheckCircle className="w-12 h-12 text-green-400" />
+      <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-zinc-950 to-black p-4 relative overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-green-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full glass-panel rounded-3xl p-10 text-center relative z-10"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="bg-green-500/20 p-4 rounded-full border border-green-500/30">
+              <CheckCircle className="w-16 h-16 text-green-400" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">
+          <h2 className="text-3xl font-bold text-white mb-3">
             Registration Successful!
           </h2>
-          <p className="text-gray-400 mb-4">
-            Your account has been created. Redirecting to login...
+          <p className="text-zinc-400">
+            Welcome aboard. Redirecting you to login...
           </p>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
-      <div className="max-w-md w-full">
-        {/* Header */}
+    <div className="min-h-screen flex items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-zinc-950 to-black p-4 relative overflow-hidden">
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="max-w-md w-full relative z-10"
+      >
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="bg-indigo-600 p-3 rounded-2xl">
-              <BookOpen className="w-12 h-12 text-white" />
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="flex justify-center mb-6"
+          >
+            <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl shadow-lg shadow-indigo-500/30">
+              <BookOpen className="w-10 h-10 text-white" />
             </div>
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Join Our Learning Platform
+          </motion.div>
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 mb-3 tracking-tight">
+            Join Platform
           </h1>
-          <p className="text-gray-400">Start your coding journey today</p>
+          <p className="text-zinc-400 text-lg">Start your coding journey</p>
         </div>
 
-        {/* Register Form */}
-        <div className="bg-gray-800 rounded-2xl shadow-xl p-8">
+        <div className="glass-panel p-8 sm:p-10 rounded-3xl relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+
           {error && (
-            <div className="mb-6 p-4 bg-red-900 border border-red-700 rounded-lg flex items-start gap-3">
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3"
+            >
               <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
               <p className="text-sm text-red-200">{error}</p>
-            </div>
+            </motion.div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Full Name
               </label>
               <input
@@ -102,13 +126,13 @@ export default function Register() {
                 required
                 value={formData.full_name}
                 onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-700 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
                 placeholder="John Doe"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Email Address
               </label>
               <input
@@ -116,13 +140,13 @@ export default function Register() {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-700 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
                 placeholder="you@company.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Password
               </label>
               <input
@@ -130,13 +154,13 @@ export default function Register() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-700 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
                 placeholder="••••••••"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Confirm Password
               </label>
               <input
@@ -144,30 +168,32 @@ export default function Register() {
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-700 rounded-lg bg-gray-900 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                className="w-full px-4 py-3 border border-white/10 rounded-xl bg-black/40 text-white placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
                 placeholder="••••••••"
               />
             </div>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3.5 rounded-xl font-semibold shadow-[0_0_20px_-5px_var(--tw-shadow-color)] shadow-indigo-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-4"
             >
               {loading ? 'Creating account...' : 'Create Account'}
-            </button>
+            </motion.button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
+          <div className="mt-8 text-center relative z-10">
+            <p className="text-zinc-400">
               Already have an account?{' '}
-              <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium">
+              <Link to="/login" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">
                 Sign in
               </Link>
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
