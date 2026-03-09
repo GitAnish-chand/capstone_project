@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { courseService, moduleService, quizService, enrollmentService } from '../services/api.service';
 import Layout from '../components/Layout';
-import { BookOpen, CheckCircle, PlayCircle, FileText, ArrowLeft } from 'lucide-react';
+import { BookOpen, CheckCircle, PlayCircle, FileText, ArrowLeft, Youtube } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
 
@@ -53,6 +53,30 @@ export default function CourseView() {
 
   const handleQuizClick = (quizId) => {
     navigate(`/quiz/${quizId}`);
+  };
+
+  // Helper function to extract YouTube video ID
+  const getYouTubeVideoId = (url) => {
+    if (!url) return null;
+    
+    // Handle different YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/,
+      /youtube\.com\/embed\/([^&\n?#]+)/,
+      /youtube\.com\/v\/([^&\n?#]+)/,
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) return match[1];
+    }
+    
+    return null;
+  };
+
+  // Check if content is a YouTube URL
+  const isYouTubeUrl = (url) => {
+    return url && (url.includes('youtube.com') || url.includes('youtu.be'));
   };
 
   if (loading) {
@@ -204,18 +228,82 @@ export default function CourseView() {
                   <h2 className="text-3xl font-bold text-white mb-8 pb-4 border-b border-white/10">
                     {selectedModule.title}
                   </h2>
-                  <div className="prose prose-invert prose-indigo max-w-none 
+                  
+                  {/* YouTube Video Player */}
+                  {isYouTubeUrl(selectedModule.content) ? (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="mb-8"
+                    >
+                      <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-black">
+                        <iframe
+                          width="100%"
+                          height="100%"
+                          src={`https://www.youtube.com/embed/${getYouTubeVideoId(selectedModule.content)}`}
+                          title={selectedModule.title}
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          allowFullScreen
+                          className="absolute inset-0"
+                        />
+                      </div>
+                      
+                      {/* Video Info */}
+                      <div className="mt-6 p-6 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
+                        <div className="flex items-start gap-4">
+                          <Youtube className="w-8 h-8 text-indigo-400 flex-shrink-0 mt-1" />
+                          <div className="flex-1">
+                            <h3 className="text-lg font-bold text-white mb-2">
+                              Video Lesson
+                            </h3>
+                            <p className="text-zinc-400 text-sm leading-relaxed">
+                              Watch this video tutorial to learn about <span className="text-indigo-300 font-medium">{selectedModule.title}</span>. 
+                              The video will open in a new tab if you prefer fullscreen viewing.
+                            </p>
+                            <a
+                              href={selectedModule.content}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center mt-4 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors text-sm font-medium"
+                            >
+                              <Youtube className="w-4 h-4 mr-2" />
+                              Open in YouTube
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : null}
+                  
+                  {/* Module Content (for non-YouTube content) */}
+                  <div className={`prose prose-invert prose-indigo max-w-none 
                     prose-headings:text-zinc-100 prose-p:text-zinc-400 
                     prose-a:text-indigo-400 hover:prose-a:text-indigo-300
                     prose-strong:text-zinc-200 prose-code:text-indigo-300
                     prose-pre:bg-black/50 prose-pre:border prose-pre:border-white/10
-                    prose-blockquote:border-indigo-500 prose-blockquote:bg-indigo-500/5 prose-blockquote:py-1">
-                    {selectedModule.content ? (
+                    prose-blockquote:border-indigo-500 prose-blockquote:bg-indigo-500/5 prose-blockquote:py-1
+                    ${isYouTubeUrl(selectedModule.content) ? 'mt-8' : ''}`}>
+                    {!isYouTubeUrl(selectedModule.content) && selectedModule.content ? (
                       <ReactMarkdown>{selectedModule.content}</ReactMarkdown>
-                    ) : (
-                      <p className="text-zinc-500 italic">No content available for this module.</p>
+                    ) : null}
+                    
+                    {isYouTubeUrl(selectedModule.content) && (
+                      <div className="mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
+                        <h3 className="text-xl font-bold text-white mb-4">About This Lesson</h3>
+                        <p className="text-zinc-400 leading-relaxed">
+                          This module covers <span className="text-indigo-300 font-medium">{selectedModule.title}</span>. 
+                          Watch the video above to learn about this topic. The video duration is approximately{' '}
+                          <span className="text-white font-semibold">{selectedModule.duration_minutes} minutes</span>.
+                        </p>
+                      </div>
                     )}
                   </div>
+                  
+                  {!selectedModule.content && !isYouTubeUrl(selectedModule.content) && (
+                    <p className="text-zinc-500 italic mt-8">No content available for this module.</p>
+                  )}
                 </motion.div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-zinc-500">
